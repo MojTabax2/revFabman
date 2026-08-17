@@ -1,0 +1,38 @@
+# Secrets -- **/ so this matches at ANY depth. A bare "secrets/*" would be
+# anchored to this directory and would miss bridge/secrets/env, leaking the
+# Supabase service_role key.
+**/secrets/*
+!**/secrets/README.md
+.env
+.env.*
+!.env.example
+service-account*.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+.venv/
+venv/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+
+# Bridge runtime files
+cache.db
+cache.db-*
+_sim/
+*.log
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp

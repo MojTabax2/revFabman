@@ -1,0 +1,11 @@
+# Pi-only hardware deps. On the Pi install both:
+#   pip install -r requirements.txt -r requirements-pi.txt
+#
+# evdev needs build tools: sudo apt install -y python3-dev
+# lgpio needs: sudo apt install -y swig liblgpio-dev
+evdev>=1.7
+luma.oled>=3.13
+smbus2>=0.4
+gpiozero>=2.0
+lgpio>=0.2.2.0
+RPi.GPIO>=0.7

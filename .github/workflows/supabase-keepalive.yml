@@ -1,0 +1,55 @@
+name: Supabase keepalive
+
+# Free-plan Supabase projects pause after 7 days without database activity.
+# The bridges sync every 30s, so a running shop keeps the project awake by
+# itself -- this is insurance for when every bridge is powered off for a week
+# or more (holiday shutdown, a move, a dead Pi).
+#
+# Setup: add two repository secrets under
+# Settings -> Secrets and variables -> Actions
+#   SUPABASE_URL       https://<project-ref>.supabase.co
+#   SUPABASE_ANON_KEY  your anon (public) key
+#
+# The anon key is already public in the deployed web app, and ping() only bumps
+# a timestamp, so this grants nothing new.
+
+on:
+  schedule:
+    # 14:00 UTC every Monday. Well inside the 7-day window, with 6 days of slack
+    # if GitHub delays or skips a run.
+    - cron: '0 14 * * 1'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
+            echo "::error::SUPABASE_URL and SUPABASE_ANON_KEY secrets are not set."
+            exit 1
+          fi
+
+          status=$(curl -sS -o response.txt -w '%{http_code}' \
+            -X POST "${SUPABASE_URL}/rest/v1/rpc/ping" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            --retry 3 --retry-delay 5 --max-time 30 \
+            -d '{}')
+
+          echo "HTTP ${status}"
+          cat response.txt
+
+          if [ "${status}" != "200" ]; then
+            echo "::error::Keepalive ping failed (HTTP ${status}). The project may be paused already."
+            exit 1
+          fi
+
+          echo "::notice::Supabase keepalive ping succeeded."

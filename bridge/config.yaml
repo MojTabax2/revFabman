@@ -1,0 +1,47 @@
+# Fabman v2 bridge config -- LOCAL settings only.
+#
+# Behavioral tunables (session length, extension rules, warning timing) live in
+# Supabase on the machines row so you can change them from the admin app.
+# Supabase credentials live in secrets/env (gitignored), not here.
+
+station:
+  machine_name: "laser-1"        # MUST match machines.name in Supabase
+  bridge_name: "bridge-laser-1"  # unique per Pi
+
+hardware:
+  i2c_bus: 1
+
+  reader:
+    type: "usb_keyboard"         # usb_keyboard | simulate
+    device_name: "OMNIKEY"       # evdev device-name substring
+    gap_seconds: 0.15            # keystroke gap that ends one card read
+    dedup_window_seconds: 2.0    # ignore an identical repeat within this window
+
+  display:
+    type: "ssd1306"              # ssd1306 | simulate
+    i2c_address: 0x3C
+    width: 128
+    height: 32
+
+  button:
+    type: "gpio"
+    gpio_pin: 24                 # NO1 -> pin 18 (GPIO 24), C1 -> GND
+    pull: "up"
+    led_pin: 16                  # LED + -> pin 36 (GPIO 16), LED - -> GND
+
+  buzzer:
+    type: "gpio"
+    gpio_pin: 13                 # pin 33
+
+  relay:
+    type: "gpio"
+    gpio_pin: 26                 # pin 37
+    active_high: true
+
+supabase:
+  env_file: "secrets/env"        # SUPABASE_URL + SUPABASE_SERVICE_KEY
+  sync_interval_seconds: 30
+  request_timeout_seconds: 10
+
+storage:
+  cache_path: "cache.db"
